@@ -1,3 +1,4 @@
+'use strict';
 
 var nock    = require('../.')
   , tap     = require('tap')
@@ -7,6 +8,13 @@ var nock    = require('../.')
   , debug   = require('debug')('nock.test_recorder')
   , mikealRequest = require('request')
   , superagent = require('superagent');
+
+var globalCount;
+
+tap.test("setup", function(t) {
+  globalCount = Object.keys(global).length;
+  t.end();
+});
 
 tap.test('recording turns off nock interception (backward compatibility behavior)', function(t) {
 
@@ -67,12 +75,11 @@ tap.test('records objects', function(t) {
   });
   var req = http.request(options, function(res) {
     res.resume();
-    var ret;
     res.once('end', function() {
       nock.restore();
-      ret = nock.recorder.play();
+      var ret = nock.recorder.play();
       t.equal(ret.length, 1);
-      var ret = ret[0];
+      ret = ret[0];
       t.type(ret, 'object');
       t.equal(ret.scope, "http://google.com:80");
       t.equal(ret.method, "POST");
@@ -114,7 +121,7 @@ tap.test('when request body is json, it goes unstringified', function(t) {
   var request = http.request(options, function(res) {
     res.resume();
     res.once('end', function() {
-      ret = nock.recorder.play();
+      var ret = nock.recorder.play();
       t.ok(ret.length >= 1);
       ret = ret[1] || ret[0];
       t.equal(ret.indexOf("\nnock('http://www.google.com:80')\n  .post('/', {\"a\":1,\"b\":true})\n  .reply("), 0);
@@ -144,7 +151,7 @@ tap.test('when request body is json, it goes unstringified in objects', function
   var request = http.request(options, function(res) {
     res.resume();
     res.once('end', function() {
-      ret = nock.recorder.play();
+      var ret = nock.recorder.play();
       t.ok(ret.length >= 1);
       ret = ret[1] || ret[0];
       t.type(ret, 'object');
@@ -560,4 +567,15 @@ tap.test('works with clients listening for readable', function(t) {
     req.end(REQUEST_BODY);
   });
 
+});
+
+tap.test("teardown", function(t) {
+  var leaks = Object.keys(global)
+    .splice(globalCount, Number.MAX_VALUE);
+
+  if (leaks.length == 1 && leaks[0] == '_key') {
+    leaks = [];
+  }
+  t.deepEqual(leaks, [], 'No leaks');
+  t.end();
 });

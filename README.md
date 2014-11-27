@@ -279,16 +279,16 @@ var scope = nock('http://myapp.iriscouch.com')
 
 You can filter the scope (protocol, domain and port through) of a nock through a function. This filtering functions is defined at the moment of defining the nock's scope through its optional `options` parameters:
 
-This can be useful, for instance, if you have a node moduel that randomly changes subdomains to which it sends requests (e.g. Dropbox node module is like that)
+This can be useful, for instance, if you have a node module that randomly changes subdomains to which it sends requests (e.g. Dropbox node module is like that)
 
 ```js
 var scope = nock('https://api.dropbox.com', {
-  filteringScope: function(scope) {
-    return /^https:\/\/api[0-9]*.dropbox.com/.test(scope);
+    filteringScope: function(scope) {
+      return /^https:\/\/api[0-9]*.dropbox.com/.test(scope);
+    }
   })
   .get('/1/metadata/auto/Photos?include_deleted=false&list=true')
   .reply(200);
-}
 ```
 
 ## Path filtering
@@ -670,6 +670,9 @@ nock.removeInterceptor({
 # How does it work?
 
 Nock works by overriding Node's `http.request` function. Also, it overrides `http.ClientRequest` too to cover for modules that use it directly.
+
+#Debugging
+Nock uses debug, so just run with enviromental variable DEBUG set to nock.*
 
 # PROTIP
 
