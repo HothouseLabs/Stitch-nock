@@ -15,4 +15,5 @@ module.exports.nocker = {
     stop  : nocker.stop
 };
 
+module.exports.back = require('./lib/back');
 module.exports.restore = recorder.restore;
